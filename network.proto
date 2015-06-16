@@ -1,0 +1,7 @@
+package main;
+
+message Packet {
+	// streams started by the client are odd. streams started by the
+	// server are even. responses use the same stream as the request.
+	required uint64 stream = 1;
+}

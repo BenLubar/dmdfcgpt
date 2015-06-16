@@ -5,12 +5,14 @@ import "github.com/nsf/termbox-go"
 const mainMenuMenuOffsetY0 = 5
 
 const (
-	mainMenuSettings = iota
+	mainMenuAddress = iota
+	mainMenuSettings
 	mainMenuExit
 	mainMenuCount
 )
 
 var mainMenuText [mainMenuCount][]rune = [...][]rune{
+	mainMenuAddress:  []rune("Address"),
 	mainMenuSettings: []rune("Settings"),
 	mainMenuExit:     []rune("Exit"),
 }
@@ -28,6 +30,13 @@ type MainMenu struct {
 
 func mainMenuActivate(option int) error {
 	switch option {
+	case mainMenuAddress:
+		ch := make(chan struct{})
+		var newFrame Frame
+		newFrame = makeAddressFrame(&newFrame, ch)
+		SetFrame(inputFrame, &newFrame)
+		close(ch)
+
 	case mainMenuSettings:
 		newFrame := makeSettingsMenu()
 		SetFrame(inputFrame, &newFrame)

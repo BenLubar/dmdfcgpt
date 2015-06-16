@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"os"
 	"sync"
 
 	"github.com/nsf/termbox-go"
@@ -12,6 +14,19 @@ type Settings struct {
 
 var currentSettings Settings
 var settingsLock sync.Mutex
+
+func init() {
+	f, err := os.Open("dmdfcgpt.settings")
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	err = json.NewDecoder(f).Decode(&currentSettings)
+	if err != nil {
+		Log.Println("config error:", err)
+	}
+}
 
 func CurrentSettings() Settings {
 	settingsLock.Lock()
@@ -25,6 +40,17 @@ func makeSettingsMenu() Frame {
 	settings := CurrentSettings()
 
 	updateSettings := func() {
+		f, err := os.Create("dmdfcgpt.settings")
+		if err != nil {
+			Log.Println("config error:", err)
+		} else {
+			err = json.NewEncoder(f).Encode(&settings)
+			if err != nil {
+				Log.Println("config error:", err)
+			}
+			f.Close()
+		}
+
 		settingsLock.Lock()
 		currentSettings = settings
 		settingsLock.Unlock()

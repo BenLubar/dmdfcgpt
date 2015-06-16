@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -15,6 +16,8 @@ import (
 var Tomb tomb.Tomb
 
 func main() {
+	flag.Parse()
+
 	// SIGQUIT normally kills the process and prints a stack trace of all
 	// goroutines, but termbox prevents that from happening cleanly.
 	// We grab SIGQUIT, close termbox, and print the stack trace ourselves,
@@ -46,6 +49,15 @@ func main() {
 		os.Exit(1)
 	}()
 
+	// Catch the terminal going away and exit cleanly.
+	hupch := make(chan os.Signal, 1)
+	signal.Notify(hupch, syscall.SIGHUP)
+
+	go func() {
+		<-hupch
+		Tomb.Killf("terminal went away")
+	}()
+
 	if err := termbox.Init(); err != nil {
 		fmt.Println("cannot start:", err)
 	}
@@ -64,6 +76,7 @@ func main() {
 func startup() error {
 	Tomb.Go(renderer)
 	Tomb.Go(input)
+	Tomb.Go(network)
 
 	var frame Frame = freshMainMenu
 	SetFrame(CurrentFrame(), &frame)
