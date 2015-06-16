@@ -112,11 +112,14 @@ func network() error {
 				for _, addr := range addrs {
 					if ipnet, ok := addr.(*net.IPNet); ok {
 						ip = ipnet.IP.String()
-						if len(ip) == net.IPv4len {
+						if ipnet.IP.To4() != nil {
 							break ifaceloop
 						}
-					} else {
-						ip = addrs[0].String()
+					} else if ipaddr, ok := addr.(*net.IPAddr); ok {
+						ip = ipaddr.IP.String()
+						if ipaddr.IP.To4() != nil {
+							break ifaceloop
+						}
 					}
 				}
 			}
