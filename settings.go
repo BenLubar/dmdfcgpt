@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"sort"
 	"sync"
 
 	"github.com/nsf/termbox-go"
@@ -10,6 +11,7 @@ import (
 
 type Settings struct {
 	HighContrast bool
+	Language     string
 }
 
 var currentSettings Settings
@@ -17,14 +19,16 @@ var settingsLock sync.Mutex
 
 func init() {
 	f, err := os.Open("dmdfcgpt.settings")
-	if err != nil {
-		return
+	if err == nil {
+		err = json.NewDecoder(f).Decode(&currentSettings)
+		f.Close()
+		if err != nil {
+			Log.Println("config error:", err)
+		}
 	}
-	defer f.Close()
 
-	err = json.NewDecoder(f).Decode(&currentSettings)
-	if err != nil {
-		Log.Println("config error:", err)
+	if i := sort.SearchStrings(TranslationIDs, currentSettings.Language); i >= len(TranslationIDs) || TranslationIDs[i] != currentSettings.Language {
+		currentSettings.Language = "English"
 	}
 }
 
@@ -72,26 +76,35 @@ func makeSettingsMenu() Frame {
 				return nil
 			},
 		},
+		Language: LanguageSelector{
+			Index: sort.SearchStrings(TranslationIDs, settings.Language),
+			Activate: func(id string) error {
+				settings.Language = id
+
+				updateSettings()
+
+				return nil
+			},
+		},
 	}
 }
 
 const (
 	settingsMenuHighContrast = iota
+	settingsMenuLanguage
 	settingsMenuCount
 )
-
-var settingsMenuText [settingsMenuCount][]rune = [...][]rune{
-	settingsMenuHighContrast: []rune("High contrast mode"),
-}
 
 type SettingsMenu struct {
 	Selection    int
 	HighContrast Frame
+	Language     Frame
 }
 
 func (sm *SettingsMenu) frames() [settingsMenuCount]*Frame {
 	return [...]*Frame{
 		settingsMenuHighContrast: &sm.HighContrast,
+		settingsMenuLanguage:     &sm.Language,
 	}
 }
 
@@ -119,7 +132,7 @@ func (sm SettingsMenu) Render(x0, y0, x1, y1 int) (Frame, error) {
 				fg |= termbox.AttrBold
 			}
 		}
-		for dx, r := range settingsMenuText[i] {
+		for dx, r := range CurrentTranslation().Settings[i] {
 			x := x0 + dx
 			if x >= center {
 				break
@@ -149,7 +162,7 @@ func (sm SettingsMenu) Key(key termbox.Key, mod termbox.Modifier) (Frame, error)
 			return sm, nil
 
 		case termbox.KeyEsc:
-			return freshMainMenu, nil
+			return makeMainMenu(mainMenuSettings), nil
 		}
 	}
 

@@ -117,8 +117,8 @@ func (f AddressFrame) Mouse(mx, my, w, h int) (Frame, error) {
 	return nil, nil
 }
 func (f AddressFrame) Key(key termbox.Key, mod termbox.Modifier) (Frame, error) {
-	return freshMainMenu, nil
+	return makeMainMenu(mainMenuAddress), nil
 }
 func (f AddressFrame) Ch(ch rune, mod termbox.Modifier) (Frame, error) {
-	return freshMainMenu, nil
+	return makeMainMenu(mainMenuAddress), nil
 }

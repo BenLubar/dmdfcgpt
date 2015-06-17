@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strings"
 	"sync/atomic"
 	"unsafe"
 
@@ -18,13 +17,6 @@ type Frame interface {
 	Mouse(mx, my, w, h int) (Frame, error)
 	Key(key termbox.Key, mod termbox.Modifier) (Frame, error)
 	Ch(ch rune, mod termbox.Modifier) (Frame, error)
-}
-
-func splitWords(text string) (words [][]rune) {
-	for _, word := range strings.SplitAfter(text, " ") {
-		words = append(words, []rune(word))
-	}
-	return
 }
 
 var currentFrame = new(Frame)

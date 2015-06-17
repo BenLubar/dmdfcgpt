@@ -78,7 +78,7 @@ func startup() error {
 	Tomb.Go(input)
 	Tomb.Go(network)
 
-	var frame Frame = freshMainMenu
+	frame := makeMainMenu(mainMenuExit)
 	SetFrame(CurrentFrame(), &frame)
 
 	return nil

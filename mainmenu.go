@@ -11,17 +11,14 @@ const (
 	mainMenuCount
 )
 
-var mainMenuText [mainMenuCount][]rune = [...][]rune{
-	mainMenuAddress:  []rune("Address"),
-	mainMenuSettings: []rune("Settings"),
-	mainMenuExit:     []rune("Exit"),
-}
-
-var freshMainMenu = MainMenu{
-	Menu: Menu{
-		Options:  mainMenuText[:],
-		Activate: mainMenuActivate,
-	},
+func makeMainMenu(selection int) Frame {
+	return MainMenu{
+		Menu: Menu{
+			Selection: selection,
+			Options:   CurrentTranslation().MainMenu[:],
+			Activate:  mainMenuActivate,
+		},
+	}
 }
 
 type MainMenu struct {

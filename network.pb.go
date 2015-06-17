@@ -21,22 +21,12 @@ var _ = proto.Marshal
 var _ = math.Inf
 
 type Packet struct {
-	// streams started by the client are odd. streams started by the
-	// server are even. responses use the same stream as the request.
-	Stream           *uint64 `protobuf:"varint,1,req,name=stream" json:"stream,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
+	XXX_unrecognized []byte `json:"-"`
 }
 
 func (m *Packet) Reset()         { *m = Packet{} }
 func (m *Packet) String() string { return proto.CompactTextString(m) }
 func (*Packet) ProtoMessage()    {}
-
-func (m *Packet) GetStream() uint64 {
-	if m != nil && m.Stream != nil {
-		return *m.Stream
-	}
-	return 0
-}
 
 func init() {
 }
